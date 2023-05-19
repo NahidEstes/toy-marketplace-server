@@ -10,7 +10,7 @@ app.use(express.json());
 
 // MongoDB
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 //  //todo must delete this
 const uri = "mongodb://127.0.0.1:27017/";
@@ -29,7 +29,31 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
-    const userCollection = client.db("toysDB").collection("toys");
+    const toysCollection = client.db("toysDB").collection("toys");
+
+    app.get("/toys", async (req, res) => {
+      const cursor = toysCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    app.post("/toys", async (req, res) => {
+      const newToys = req.body;
+      console.log(newToys);
+      const result = await toysCollection.insertOne(newToys);
+      res.send(result);
+    });
+
+    // delete items from database
+    app.delete("/toys/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+
+      const query = { _id: new ObjectId(id) };
+      const result = await toysCollection.deleteOne(query);
+
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
