@@ -13,13 +13,6 @@ app.use(express.json());
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
-//  //todo must delete this
-// const uri = "mongodb://127.0.0.1:27017/";
-// const uri =
-//   "mongodb+srv://assignmentDatabase:FkKtQ8HmssmVDvJj@cluster0.33bueao.mongodb.net/?retryWrites=true&w=majority";
-
-console.log(process.env.DB_USER);
-
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.33bueao.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -40,7 +33,7 @@ async function run() {
     const galleryImageCollection = client.db("imageDB").collection("images");
 
     app.get("/toys", async (req, res) => {
-      const cursor = toysCollection.find();
+      const cursor = toysCollection.find().limit(20);
       const result = await cursor.toArray();
       res.send(result);
     });
@@ -54,11 +47,32 @@ async function run() {
 
     app.get("/toys/:id", async (req, res) => {
       const id = req.params.id;
-
       const query = { _id: new ObjectId(id) };
-
       const result = await toysCollection.findOne(query);
       res.send(result);
+    });
+
+    app.get("/toySort", async (req, res) => {
+      try {
+        const { sort } = req.query;
+
+        let sortCriteria = {};
+
+        if (sort === "asc") {
+          sortCriteria = { price: 1 };
+        } else if (sort === "desc") {
+          sortCriteria = { price: -1 };
+        }
+
+        const products = await toysCollection
+          .find()
+          .sort(sortCriteria)
+          .toArray();
+        res.json(products);
+      } catch (error) {
+        console.error("Error retrieving products", error);
+        res.status(500).json({ error: "Error retrieving products" });
+      }
     });
 
     app.post("/toys", async (req, res) => {
@@ -83,7 +97,6 @@ async function run() {
     app.delete("/toys/:id", async (req, res) => {
       const id = req.params.id;
       console.log(id);
-
       const query = { _id: new ObjectId(id) };
       const result = await toysCollection.deleteOne(query);
 
