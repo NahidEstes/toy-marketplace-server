@@ -52,29 +52,6 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/toySort", async (req, res) => {
-      try {
-        const { sort } = req.query;
-
-        let sortCriteria = {};
-
-        if (sort === "asc") {
-          sortCriteria = { price: 1 };
-        } else if (sort === "desc") {
-          sortCriteria = { price: -1 };
-        }
-
-        const products = await toysCollection
-          .find()
-          .sort(sortCriteria)
-          .toArray();
-        res.json(products);
-      } catch (error) {
-        console.error("Error retrieving products", error);
-        res.status(500).json({ error: "Error retrieving products" });
-      }
-    });
-
     app.post("/toys", async (req, res) => {
       const newToys = req.body;
       console.log(newToys);
@@ -82,7 +59,7 @@ async function run() {
       res.send(result);
     });
 
-    //getting specific user item
+    // getting specific user item
     app.get("/toysSeller", async (req, res) => {
       console.log(req.query.sellerEmail);
       let query = {};
